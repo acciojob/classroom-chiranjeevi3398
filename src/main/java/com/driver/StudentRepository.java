@@ -1,82 +1,94 @@
 package com.driver;
 
+import org.springframework.stereotype.Repository;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Repository
 public class StudentRepository {
 
-    Map<String,Student> studentMap;
-    Map<String,Teacher> teacherMap;
-    Map<String, List<String>> pairMap;
+    Map<String,Student> studentMap = new HashMap<>();
+    Map<String,Teacher> teacherMap = new HashMap<>();
+    Map<String,String> studentTeacherPairMap = new HashMap<>();
 
-    public StudentRepository(){
-        studentMap=new HashMap<>();
-        teacherMap=new HashMap<>();
-        pairMap=new HashMap<>();
+    Map<String, List<String>> teacherStudentList = new HashMap<>();
+
+    public String addStudent(Student student){
+        studentMap.put(student.getName(),student);
+        return "Add successively";
     }
 
-    public void addStudent(Student student){
-        if(!studentMap.containsKey(student.getName()))
-            studentMap.put(student.getName(), student);
+    public String addTeacher(Teacher teacher){
+        teacherMap.put(teacher.getName(),teacher);
+        return "Teacher Added";
     }
 
-    public  void addTeacher(Teacher teacher){
-        if(!teacherMap.containsKey(teacher.getName()))
-            teacherMap.put(teacher.getName(),teacher);
-    }
-
-    public void addStudentTeacherPair(String student,String teacher){
-        if(!studentMap.containsKey(student) || !teacherMap.containsKey(teacher))
-            return;
-        if(pairMap.containsKey(teacher)){
-            pairMap.get(teacher).add(student);
-        }else{
-            List<String> list=new ArrayList<>();
+    // 3
+    public String addStudentTeacherPair(String student,String teacher){
+        if(teacherStudentList.containsKey(teacher)){
+            List<String> list = teacherStudentList.get(teacher);
             list.add(student);
-            pairMap.put(teacher,list);
+            studentTeacherPairMap.put(student,teacher);
+        }else{
+            List<String> list = new ArrayList<>();
+            list.add(student);
+            teacherStudentList.put(teacher,list);
+            studentTeacherPairMap.put(student,teacher);
         }
+
+        return "pair added";
     }
 
+    // 4
     public Student getStudentByName(String student){
-        if(!studentMap.containsKey(student))
-            return null;
         return studentMap.get(student);
     }
 
+    // 5
     public Teacher getTeacherByName(String teacher){
-        if(!teacherMap.containsKey(teacher))
-            return null;
         return teacherMap.get(teacher);
     }
 
+    // 6
     public List<String> getStudentsByTeacherName(String teacher){
-        return pairMap.get(teacher);
+        return teacherStudentList.get(teacher);
     }
+
+    // 7
     public List<String> getAllStudents(){
-        return new ArrayList<>(studentMap.keySet());
-    }
-
-    public void deleteTeacherByName(String teacher){
-        List<String> students=pairMap.get(teacher);
-        pairMap.remove(teacher);
-        for(String s: students){
-            if(studentMap.containsKey(s))
-                studentMap.remove(s);
+        List<String> list = new ArrayList<>();
+        for(String x : studentMap.keySet()){
+            list.add(x);
         }
-        if(teacherMap.containsKey(teacher))
-            teacherMap.remove(teacher);
+        return list;
     }
 
-    public void deleteAllTeachers(){
-        for(String t: pairMap.keySet()){
-            for(String s: pairMap.get(t)){
-                if(studentMap.containsKey(s))
-                    studentMap.remove(s);
+
+    //8
+    public String deleteTeacherByName(String teacher){
+        List<String> list = teacherStudentList.get(teacher);
+        for (int i=0;i<list.size();i++){
+            studentMap.remove(list.get(i));
+        }
+        teacherMap.remove(teacher);
+        return "delete successively";
+    }
+
+    // 9
+    public String deleteAllTeachers(){
+        for(String teacher : teacherMap.keySet()){
+            if(teacherStudentList.containsKey(teacher)){
+                List<String> list = teacherStudentList.get(teacher);
+                for (int i=0;i<list.size();i++){
+                    studentMap.remove(list.get(i));
+                }
+                teacherStudentList.remove(teacher);
             }
         }
-        pairMap.clear();
         teacherMap.clear();
+        return "delete successively";
     }
 }
